@@ -7,7 +7,7 @@ description: >
   reusable skills via the skills package (skills.sh). Use this skill when opening
   a project, after dependencies change, or before relying on a package so you can
   reuse existing rules/skills instead of recreating them from scratch.
-version: 0.1.0
+version: 0.2.0
 author: Ivo Ilić <https://ivoilic.com>
 tags:
   - packages
@@ -83,6 +83,9 @@ Follow this workflow whenever the skill triggers.
    create a new global convention file unless:
    - No suitable destination exists **and**
    - The user explicitly asks you to introduce one.
+   - If there are **no** rule/config destinations at all in the project (none of the above
+     exist yet), it is acceptable to create an `AGENTS.md` at the root and use it as the
+     unified aggregation point for discovered package skills and rules.
 
 ### Step 2: Look for package-provided rule and skill sources
 
@@ -101,6 +104,20 @@ Follow this workflow whenever the skill triggers.
      - `.github/instructions/`
      - `AGENTS.md`
      - Other docs mentioning “rules”, “agents”, “skills”, “llms”, or “skills.sh”.
+   - If `node_modules` or `node_modules/<packageName>` cannot be read or does not exist
+     (for example in remote/sandboxed environments or when dependencies are installed
+     outside the workspace), fall back to **command-based discovery**:
+     - Use the project’s package manager to search for the installed package, for example:
+       - `pnpm ls <packageName> --depth 10`
+       - `npm ls <packageName> --depth 10`
+       - `yarn why <packageName>`
+     - From the paths these commands report, inspect each resolved package directory as
+       you would `node_modules/<packageName>`: look for `llms`, `rules`, `agents`,
+       `skills`, convention docs, and other rule/skill exports.
+     - If those commands do not find a match but you still suspect the package exists in
+       a monorepo or workspace, you may additionally search the workspace for directories
+       named exactly like the package (for example `<workspace>/**/<packageName>/package.json`)
+       and inspect those.
 4. Prefer **static inspection** (reading source/JSON files) over executing package code.
    Use runtime `require`/`import` only when absolutely necessary and safe.
 
